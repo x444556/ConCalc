@@ -11,7 +11,10 @@ namespace ConCalc
             {
                 Console.Write("> ");
                 string inp = Console.ReadLine();
-                Console.WriteLine("  " + Calc(Prepare(inp)));
+                string prep = Prepare(inp);
+                Console.WriteLine("  " + prep);
+                Console.WriteLine("= " + Calc(prep));
+                Console.WriteLine();
             }
         }
         private static string Prepare(string f)
@@ -28,12 +31,13 @@ namespace ConCalc
                 {
                     o += "*(";
                 }
-                else if(f[i] != ' ')
+                else if (f[i] == ',') o += '.';
+                else if ("1234567890+-*/^.%_()".Contains(f[i]))
                 {
                     o += f[i];
                 }
 
-                if ("+-*/^".Contains(f[i]))
+                if ("+-*/^%".Contains(f[i]))
                 {
                     lastIsOp = true;
                 }
@@ -54,7 +58,7 @@ namespace ConCalc
 
             while (f.Contains('^'))
             {
-                f = Mod(f);
+                f = Pow(f);
             }
             while (f.Contains('*') || f.Contains('/'))
             {
@@ -66,6 +70,10 @@ namespace ConCalc
                 {
                     f = Div(f);
                 }
+            }
+            while (f.Contains('%'))
+            {
+                f = Mod(f);
             }
             while (f.Contains('+') || f.Contains('-'))
             {
@@ -107,7 +115,7 @@ namespace ConCalc
 
             return s.Substring(0, opi - nr0.Length) + res + s.Substring(opi + 1 + nr1.Length);
         }
-        private static string Mod(string s)
+        private static string Pow(string s)
         {
             if (!s.Contains('^')) return s;
 
@@ -130,6 +138,32 @@ namespace ConCalc
             nr1 = nr1.Replace('_', '-');
             string res = DoubleToString(Math.Pow(double.Parse(nr0, CultureInfo.InvariantCulture), double.Parse(nr1, 
                 CultureInfo.InvariantCulture))).Replace('-', '_');
+
+            return s.Substring(0, opi - nr0.Length) + res + s.Substring(opi + 1 + nr1.Length);
+        }
+        private static string Mod(string s)
+        {
+            if (!s.Contains('%')) return s;
+
+            s = s.Replace(" ", "");
+            s = s.Replace(",", ".");
+
+            int opi = s.IndexOf('%');
+            string nr0 = "";
+            string nr1 = "";
+            for (int i = opi - 1; i >= 0 && "1234567890._".Contains(s[i]); i--)
+            {
+                nr0 = s[i] + nr0;
+            }
+            for (int i = opi + 1; i < s.Length && "1234567890._".Contains(s[i]); i++)
+            {
+                nr1 += s[i];
+            }
+
+            nr0 = nr0.Replace('_', '-');
+            nr1 = nr1.Replace('_', '-');
+            string res = DoubleToString(double.Parse(nr0, CultureInfo.InvariantCulture) % double.Parse(nr1,
+                CultureInfo.InvariantCulture)).Replace('-', '_');
 
             return s.Substring(0, opi - nr0.Length) + res + s.Substring(opi + 1 + nr1.Length);
         }
